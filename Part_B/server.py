@@ -22,8 +22,10 @@ while True:
             if index not in got.keys():
                 got_all = False
         if got_all:
-            break
-sorted_keys = sorted(got.keys())
-for key in sorted_keys:
-    print(got[key], end="")
+            sorted_keys = sorted(got.keys())
+            for key in sorted_keys:
+                print(got[key], end="")
+            got = {}
+            flag_got_max = False
+            max_value = 0
 
