@@ -28,21 +28,19 @@ try:
         for i in diff:
             s.sendto(index_to_text_dict[i].encode(),(ip_num,port_num))
         timedout = False
-        while(not timedout):
-            data = None
-            data, addr = s.recvfrom(100)
-            if(data==None):
-                timedout = True
-            else:
+        try:
+            while True:
+                data, addr = s.recvfrom(100)
                 colon_place = data.decode().find(":")
                 num = data.decode()[:colon_place]
                 if(num.__contains__("max")):
                     num = num[3:]
-                text = data.decode()[colon_place+1:]
-                if(index_to_text_dict[int(num)]==text):
+                if(index_to_text_dict[int(num)]==data.decode()):
                     acked_num = int(num)
                     if(acked_num not in acknowledged_correctly):
                         acknowledged_correctly.add(acked_num)
+        except:
+            continue
 except:
     print("Input error")
 finally:
