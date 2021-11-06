@@ -1,5 +1,6 @@
 import socket,sys
 try:
+    #opening socket, setting timeout and defining variables
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(10)
     packet_data_text_len = 90
@@ -12,6 +13,7 @@ try:
     j=0
     index_to_text_dict = {}
     acknowledged_correctly = set([])
+    #cutting the text file to fragments of length packet_data_text_len
     while(textleft != None):
         j=j+1
         if(len(textleft)>packet_data_text_len):
@@ -23,13 +25,17 @@ try:
         index_to_text_dict[j]=str(j)+":"+curr_text
     max_value = j
     index_to_text_dict[max_value] = "max"+index_to_text_dict[max_value]
+    #while not all fragments were acknowledged correctly
     while(acknowledged_correctly!=set(index_to_text_dict.keys())):
         diff = set(index_to_text_dict.keys()).difference(acknowledged_correctly)
+        #send all fragments not acknowledged correctly yet
         for i in diff:
             s.sendto(index_to_text_dict[i].encode(),(ip_num,port_num))
         timedout = False
         try:
             while True:
+                #acknowledge fragments received(if received just as sent)
+                #until 10 seconds have passed without none
                 data, addr = s.recvfrom(100)
                 colon_place = data.decode().find(":")
                 num = data.decode()[:colon_place]
