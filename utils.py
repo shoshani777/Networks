@@ -36,17 +36,10 @@ def send_file(path, sock, client_id):
         sock.send(bytes("create_folder " + path))
         return
     sock.send("create_file " + path + " ")  # first send the operation + path
-    with open(path, 'r') as file:
-        for line in file:
-            sock.send(line)  # send line by line
+    with open(path, 'rb') as file:
+        sock(file.read())
         sock.send(bytes("end " + client_id))
 
 
 def send_delete_file(path, sock):
     sock.send("delete " + path)
-
-
-clso = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-execute_operation("", clso, "1j1j")
-send_file("", clso, "1j1j")
-send_delete_file("", clso)
