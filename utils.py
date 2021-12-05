@@ -60,8 +60,8 @@ def send_file(path, sock):
 def send_delete_file(path, sock):
     sock.send(bytes("delete " + path + " "))
 
-def send_file_deep(path, sock, ID):
-    send_file(path, sock,ID)
+def send_file_deep(path, sock):
+    send_file(path, sock)
     if(os.path.isdir(path)):
         for file in os.listdir(path):
-            send_file_deep(file, sock, ID)
+            send_file_deep(file, sock)
