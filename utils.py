@@ -5,7 +5,7 @@ import os
 def execute_operation(current_path, sock, client_id):
     text = sock.recv(4096)  # get operation + path (if needed)
     if text.startswith(b"create_folder"):  # create folder
-        folder_path = text.split(" ")[1]  # get the path
+        folder_path = text.split(b" ")[1]  # get the path
         try:
             os.makedirs(os.path.normpath(current_path + "\\" + str(folder_path)))
             # create the directory (if exist do nothing)
@@ -37,7 +37,7 @@ def send_file(path, sock, client_id):
         return
     sock.send("create_file " + path + " ")  # first send the operation + path
     with open(path, 'rb') as file:
-        sock(file.read())
+        sock.send(file.read())
         sock.send(bytes("end " + client_id))
 
 
