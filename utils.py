@@ -5,9 +5,10 @@ import os
 def execute_operation(current_path, sock):
     log = []
     familiar = True
+    text = b""
     while familiar:  # loop until done, update etc...
         familiar = False
-        text = sock.recv(4096)  # get operation
+        text += sock.recv(4096)  # get operation
         if text.startswith(b"create_folder"):  # create folder
             familiar = True
             folder_path = text.split(b" ", 2)[1]  # get the path
@@ -15,9 +16,9 @@ def execute_operation(current_path, sock):
                 os.makedirs(os.path.normpath(current_path + "\\" + str(folder_path)))
                 # create the directory (if exist do nothing)
             finally:
-                log.append(text.removesuffix(bytes(text.split(b" ", 2)[2])))  # add to log the operation create folder
+                log.append(str(text.removesuffix(bytes(text.split(b" ", 2)[2]))))  # add to log the operation create folder
                 text = text.split(b" ", 2)[2]  # remove create folder from text
-        if text.startswith(b"create_file"):  # create file
+        elif text.startswith(b"create_file"):  # create file
             familiar = True
             folder_path = text.split(b" ", 2)[1]  # get the path
             if len(text.split(b" ", 2)) > 2:  # part of the bytes of the file was sent to us
@@ -34,13 +35,15 @@ def execute_operation(current_path, sock):
                 log.append(bytes("create_file " + folder_path + " ") + file_text + bytes("#endoffunctions#"))
                 text = text.removeprefix(bytes("create_file " + folder_path + " ")+file_text+bytes("#endoffunctions#"))
                 file.write(file_text)
-        if text.startswith(b"delete"):
+        elif text.startswith(b"delete"):
             familiar = True
             try:
                 os.remove(text.split(b" ", 2)[1])
             finally:
-                log.append("delete " + text.split(b" ", 2)[1])
-                text.removeprefix("delete " + text.split(b" ", 2)[1])
+                log.append("delete " + str(text.split(b" ", 2)[1]))
+                text.removeprefix(bytes("delete " + text.split(b" ", 2)[1]))
+        else:
+            log.append(str(text))
     return log
 
 
@@ -56,3 +59,9 @@ def send_file(path, sock):
 
 def send_delete_file(path, sock):
     sock.send(bytes("delete " + path + " "))
+
+def send_file_deep(path, sock, ID):
+    send_file(path, sock,ID)
+    if(os.path.isdir(path)):
+        for file in os.listdir(path):
+            send_file_deep(file, sock, ID)
