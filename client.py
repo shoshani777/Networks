@@ -40,7 +40,7 @@ def main():
     else:
         server_sock.send(bytes("give id"))  # send id (to get one) and the path to track
         client_id = server_sock.recv(4096)
-
+        send_file_deep(FOLDER_PATH, server_sock)
 
     patterns = ["*"]
     ignore_patterns = None
