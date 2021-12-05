@@ -35,7 +35,7 @@ def main():
         for string in result_str:
             if (string.startswith("update ")):
                 update(client_socket, IP_and_port_to_ID[client_address],client_address[0], client_address[1])
-                client_socket.send("done " + IP_and_port_to_ID[client_address])
+                client_socket.send("#endoffunctions#")
                 break
             elif (string.startswith("give ")):
                 ID = make_ID()
@@ -49,9 +49,9 @@ def main():
                 if (len(os.listdir(os.path.normpath(BASE_PATH+"\\"+ID)))>0):
                     for file in os.listdir(os.path.normpath(BASE_PATH+"\\"+ID)):
                         utils.send_file_deep(os.path.normpath(BASE_PATH+"\\"+ID+"\\"+file),client_socket,ID)
-                    client_socket.send("done "+ID)
+                    client_socket.send("#endoffunctions#")
                     IP_and_port_to_actions_nissing[client_address] = []
-                client_socket.send("done " + ID)
+                client_socket.send("#endoffunctions#")
                 break
             else:
                 ID = IP_and_port_to_ID[client_address]
