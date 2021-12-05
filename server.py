@@ -49,7 +49,6 @@ def main():
                 if (len(os.listdir(os.path.normpath(BASE_PATH+"\\"+ID)))>0):
                     for file in os.listdir(os.path.normpath(BASE_PATH+"\\"+ID)):
                         utils.send_file_deep(os.path.normpath(BASE_PATH+"\\"+ID+"\\"+file),client_socket,ID)
-                    client_socket.send("#endoffunctions#")
                     IP_and_port_to_actions_nissing[client_address] = []
                 client_socket.send("#endoffunctions#")
                 break
