@@ -7,7 +7,7 @@ def execute_operation(current_path, sock, client_id):
     if text.startswith(b"create_folder"):  # create folder
         folder_path = text.split(" ")[1]  # get the path
         try:
-            os.makedirs(os.path.normpath(current_path + "\\" + folder_path))
+            os.makedirs(os.path.normpath(current_path + "\\" + str(folder_path)))
             # create the directory (if exist do nothing)
         finally:
             pass
