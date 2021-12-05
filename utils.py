@@ -7,7 +7,8 @@ def execute_operation(current_path, sock, client_id):
     if text.startswith("create_folder"):  # create folder
         folder_path = text.split(" ")[1]  # get the path
         try:
-            os.makedirs(os.path.normpath(current_path + "\\" + folder_path))  # create the directory (if exist do nothing)
+            os.makedirs(os.path.normpath(current_path + "\\" + folder_path))
+            # create the directory (if exist do nothing)
         finally:
             pass
     elif text.startswith("create_file"):  # create file
@@ -20,11 +21,12 @@ def execute_operation(current_path, sock, client_id):
             file_text += sock.recv(100)  # add the next text
             while bytes("end " + client_id) not in text:
                 file_text += sock.recv(100)
+            text += file_text
             file_text = file_text.removesuffix(bytes("end " + client_id))
             file.write(str(file_text))
     elif text.startswith("delete"):
         os.remove(text.split(" ")[1])
-    elif text is "done":
+    elif text.startswith("done"):
         return None
     return text
 
