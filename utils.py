@@ -5,43 +5,43 @@ import os
 def execute_operation(current_path, sock):
     log = []
     familiar = True
-    text = b""
+    text = "".encode()
     while familiar:  # loop until done, update etc...
         familiar = False
         text += sock.recv(4096)  # get operation
-        if text.startswith(b"create_folder"):  # create folder
+        if text.startswith("create_folder".encode()):  # create folder
             familiar = True
-            folder_path = text.split(b" ", 2)[1]  # get the path
+            folder_path = text.split(" ".encode(), 2)[1]  # get the path
             try:
                 os.makedirs(os.path.normpath(current_path + "\\" + str(folder_path)))
                 # create the directory (if exist do nothing)
             finally:
-                log.append(str(text.removesuffix(bytes(text.split(b" ", 2)[2]))))  # add to log the operation create folder
-                text = text.split(b" ", 2)[2]  # remove create folder from text
-        elif text.startswith(b"create_file"):  # create file
+                log.append(str(text.removesuffix(text.split(b" ", 2)[2].encode())))  # add to log the operation create folder
+                text = text.split(" ".encode(), 2)[2]  # remove create folder from text
+        elif text.startswith("create_file".encode()):  # create file
             familiar = True
-            folder_path = text.split(b" ", 2)[1]  # get the path
-            if len(text.split(b" ", 2)) > 2:  # part of the bytes of the file was sent to us
-                file_text = text.split(b" ", 2)[2]  # ([operation, path, text])
+            folder_path = text.split(" ".encode(), 2)[1]  # get the path
+            if len(text.split(" ".encode(), 2)) > 2:  # part of the bytes of the file was sent to us
+                file_text = text.split(" ".encode(), 2)[2]  # ([operation, path, text])
             else:
-                file_text = b""
+                file_text = "".encode()
             with open(os.path.normpath(current_path + "\\" + folder_path), 'wb') as file:  # open file to write
                 file_text += sock.recv(4096)  # add the next bytes
                 text += file_text
-                while bytes("#endoffunctions#") not in file_text:
+                while "#endoffunctions#".encode() not in file_text:
                     file_text += sock.recv(4096)
                     text += file_text
-                file_text = file_text.split(bytes("#endoffunctions#"), 1)[0]  # now file_text = only the file bytes
-                log.append(bytes("create_file " + folder_path + " ") + file_text + bytes("#endoffunctions#"))
-                text = text.removeprefix(bytes("create_file " + folder_path + " ")+file_text+bytes("#endoffunctions#"))
+                file_text = file_text.split("#endoffunctions#".encode(), 1)[0]  # now file_text = only the file bytes
+                log.append(("create_file " + folder_path + " ").encode() + file_text + "#endoffunctions#".encode())
+                text = text.removeprefix(("create_file " + folder_path + " ").encode()+file_text+"#endoffunctions#".encode())
                 file.write(file_text)
-        elif text.startswith(b"delete"):
+        elif text.startswith("delete".encode()):
             familiar = True
             try:
-                os.remove(text.split(b" ", 2)[1])
+                os.remove(text.split(" ".encode(), 2)[1])
             finally:
-                log.append("delete " + str(text.split(b" ", 2)[1]))
-                text.removeprefix(bytes("delete " + text.split(b" ", 2)[1]))
+                log.append("delete " + str(text.split(" ".encode(), 2)[1]))
+                text.removeprefix(("delete " + text.split(b" ", 2)[1]).encode())
         else:
             log.append(str(text))
     return log
@@ -49,16 +49,16 @@ def execute_operation(current_path, sock):
 
 def send_file(path, sock):
     if os.path.isdir(path):
-        sock.send(bytes("create_folder " + path))
+        sock.send(("create_folder " + path).encode())
         return
-    sock.send("create_file " + path + " ")  # first send the operation + path
+    sock.send(("create_file " + path + " ").encode())  # first send the operation + path
     with open(path, 'rb') as file:
         sock.send(file.read())
-        sock.send(bytes("#endoffunctions#"))
+        sock.send("#endoffunctions#".encode())
 
 
 def send_delete_file(path, sock):
-    sock.send(bytes("delete " + path + " "))
+    sock.send(("delete " + path + " ").encode())
 
 def send_file_deep(path, sock):
     send_file(path, sock)
