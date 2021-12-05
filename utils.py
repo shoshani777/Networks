@@ -17,13 +17,13 @@ def execute_operation(current_path, sock, client_id):
             file_text = text.split(b" ", 2)[2]  # ([operation, path, text])
         else:
             file_text = b""
-        with open(os.path.normpath(current_path + "\\" + folder_path), 'w') as file:  # open file to write
+        with open(os.path.normpath(current_path + "\\" + folder_path), 'wb') as file:  # open file to write
             file_text += sock.recv(100)  # add the next text
             while bytes("end " + client_id) not in text:
                 file_text += sock.recv(100)
             text += file_text
             file_text = file_text.removesuffix(bytes("end " + client_id))
-            file.write(str(file_text))
+            file.write(file_text)
     elif text.startswith(b"delete"):
         os.remove(text.split(b" ")[1])
     elif text.startswith(b"done"):
