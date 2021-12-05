@@ -2,7 +2,7 @@ import socket
 import os
 
 
-def execute_operation(current_path, sock, client_id):
+def execute_operation(current_path, sock):
     log = []
     familiar = True
     while familiar:  # loop until done, update etc...
@@ -27,12 +27,12 @@ def execute_operation(current_path, sock, client_id):
             with open(os.path.normpath(current_path + "\\" + folder_path), 'wb') as file:  # open file to write
                 file_text += sock.recv(4096)  # add the next bytes
                 text += file_text
-                while bytes("end " + client_id) not in file_text:
+                while bytes("#endoffunctions#") not in file_text:
                     file_text += sock.recv(4096)
                     text += file_text
-                file_text = file_text.split(bytes("end " + client_id), 1)[0]  # now file_text = only the file bytes
-                log.append(bytes("create_file " + folder_path + " ") + file_text + bytes("end " + client_id))
-                text = text.removeprefix(bytes("create_file " + folder_path + " ")+file_text+bytes("end " + client_id))
+                file_text = file_text.split(bytes("#endoffunctions#"), 1)[0]  # now file_text = only the file bytes
+                log.append(bytes("create_file " + folder_path + " ") + file_text + bytes("#endoffunctions#"))
+                text = text.removeprefix(bytes("create_file " + folder_path + " ")+file_text+bytes("#endoffunctions#"))
                 file.write(file_text)
         if text.startswith(b"delete"):
             familiar = True
@@ -44,20 +44,15 @@ def execute_operation(current_path, sock, client_id):
     return log
 
 
-def send_file(path, sock, client_id):
+def send_file(path, sock):
     if os.path.isdir(path):
         sock.send(bytes("create_folder " + path))
         return
     sock.send("create_file " + path + " ")  # first send the operation + path
     with open(path, 'rb') as file:
         sock.send(file.read())
-        sock.send(bytes("end " + client_id))
+        sock.send(bytes("#endoffunctions#"))
 
 
 def send_delete_file(path, sock):
     sock.send(bytes("delete " + path + " "))
-
-
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-execute_operation("", sock, "")
-send_delete_file("", sock)
