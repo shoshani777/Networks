@@ -27,6 +27,9 @@ def execute_log(current_path, sock):
                 text = text.replace("create_file " + folder_path + " #endoffunctions#", "", 1)
         elif text.startswith("create_file"):  # create file
             folder_path = text.split(" ", 2)[1]  # get the path
+            if os.path.exists(norming_path(current_path + "\\" + folder_path)):
+                text = text.replace("create_file " + folder_path + " " + file_text + "#endoffunctions#", "", 1)
+                continue
             file_text = text.split(" ", 2)[2]  # ([operation, path, text])
             with open(norming_path(current_path + "\\" + folder_path), 'w') as file:  # open file to write
                 file_text = file_text.split("#endoffunctions#", 1)[0]  # now file_text = only the file bytes
