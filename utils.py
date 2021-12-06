@@ -75,7 +75,7 @@ def send_file_deep(path, current_path):
     log = [send_file(path, current_path)]
     if os.path.isdir(norming_path(current_path + "\\" + path)):
         for file in os.listdir(norming_path(current_path + "\\" + path)):
-            log.extend(send_file_deep(file, norming_path(current_path + "\\" + path)))
+            log.extend(send_file_deep(norming_path(path + "\\" + file), current_path))
     return log
 
 
