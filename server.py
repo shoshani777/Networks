@@ -31,17 +31,20 @@ def main():
     server.listen(5)
     while True:
         client_socket, client_address = server.accept()
-        result_str = utils.execute_operation(BASE_PATH, client_socket, IP_and_port_to_ID[client_address])
+        result_str = utils.execute_operation(BASE_PATH, client_socket)
         for string in result_str:
             if (string.startswith("update ")):
                 update(client_socket, IP_and_port_to_ID[client_address],client_address[0], client_address[1])
-                client_socket.send("#endoffunctions#")
+                client_socket.send("#endoffunctions#".encode())
                 break
-            elif (string.startswith("give ")):
+            elif (string.startswith("give id")):
                 ID = make_ID()
                 IP_and_port_to_ID[client_address] = ID
                 IP_and_port_to_actions_nissing[client_address] = []
                 client_socket.send(IP_and_port_to_ID[client_address].encode())
+                print("trying to create folder")
+                client_socket.send(("create_folder "+os.path.normpath(BASE_PATH+"\\"+ID)).encode())
+                client_socket.send("#endoffunctions#".encode())
                 break
             elif (string.startswith("ID ")):
                 ID = string.split(' ')[1]
@@ -50,7 +53,7 @@ def main():
                     for file in os.listdir(os.path.normpath(BASE_PATH+"\\"+ID)):
                         utils.send_file_deep(os.path.normpath(BASE_PATH+"\\"+ID+"\\"+file),client_socket,ID)
                     IP_and_port_to_actions_nissing[client_address] = []
-                client_socket.send("#endoffunctions#")
+                client_socket.send("#endoffunctions#".encode())
                 break
             else:
                 ID = IP_and_port_to_ID[client_address]

@@ -3,6 +3,7 @@ import os
 
 
 def execute_operation(current_path, sock):
+    print("execute_operation "+ current_path)
     log = []
     familiar = True
     text = "".encode()
@@ -13,10 +14,10 @@ def execute_operation(current_path, sock):
             familiar = True
             folder_path = text.split(" ".encode(), 2)[1]  # get the path
             try:
-                os.makedirs(os.path.normpath(current_path + "\\" + str(folder_path)))
+                os.makedirs(os.path.normpath(current_path + "\\" + (folder_path).decode()))
                 # create the directory (if exist do nothing)
             finally:
-                log.append(str(text.removesuffix(text.split(b" ", 2)[2].encode())))  # add to log the operation create folder
+                log.append((text.removesuffix(text.split(b" ", 2)[2].encode())).decode())  # add to log the operation create folder
                 text = text.split(" ".encode(), 2)[2]  # remove create folder from text
         elif text.startswith("create_file".encode()):  # create file
             familiar = True
@@ -32,23 +33,25 @@ def execute_operation(current_path, sock):
                     file_text += sock.recv(4096)
                     text += file_text
                 file_text = file_text.split("#endoffunctions#".encode(), 1)[0]  # now file_text = only the file bytes
-                log.append(("create_file " + folder_path + " ").encode() + file_text + "#endoffunctions#".encode())
-                text = text.removeprefix(("create_file " + folder_path + " ").encode()+file_text+"#endoffunctions#".encode())
+                log.append(("create_file " + folder_path.decode() + " ").encode() + file_text + "#endoffunctions#".encode())
+                text = text.removeprefix(("create_file " + folder_path.decode() + " ").encode()+file_text+"#endoffunctions#".encode())
                 file.write(file_text)
         elif text.startswith("delete".encode()):
             familiar = True
             try:
                 os.remove(text.split(" ".encode(), 2)[1])
             finally:
-                log.append("delete " + str(text.split(" ".encode(), 2)[1]))
-                text.removeprefix(("delete " + text.split(b" ", 2)[1]).encode())
+                log.append("delete " + (text.split(" ".encode(), 2)[1]).decode())
+                text.removeprefix(("delete " + text.split(b" ", 2)[1].decode()).encode())
         else:
-            log.append(str(text))
+            log.append(text.decode())
     return log
 
 
 def send_file(path, sock):
+    print("sending file "+ path)
     if os.path.isdir(path):
+        print("creating folder "+ path)
         sock.send(("create_folder " + path).encode())
         return
     sock.send(("create_file " + path + " ").encode())  # first send the operation + path
