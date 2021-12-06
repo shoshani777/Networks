@@ -1,89 +1,84 @@
 import socket
 import os
 import sys
-import server
 import string
+
 
 def getnum():
     return 18
 
-def execute_operation(current_path, sock, address):
-    print("execute_operation "+ current_path)
+
+def send_delete_file(path):
+    return "delete " + path + " #endoffunctions#"
+
+
+def execute_log(current_path, sock):
+    print("execute_operation " + current_path)
     log = []
-    familiar = True
     text = ""
-    while familiar:  # loop until done, update etc...
-        familiar = False
-        text += sock.recv(4096).decode()  # get operation
-        print("went through recieving, text: "+text)
+    while "#endoflog#" not in text:
+        while "#endoffunctions#" not in text:
+            text += sock.recv(4096).decode()  # get operation
         if text.startswith("create_folder"):  # create folder
-            familiar = True
             folder_path = text.split(" ", 2)[1]  # get the path
             try:
-                os.makedirs(os.path.normpath(current_path + "\\" + folder_path))
-                # create the directory (if exist do nothing)
+                os.makedirs(norming_path(current_path + "\\" + folder_path))
+                log.append("create_file " + folder_path + " #endoffunctions#")  # add to log the operation create folder
             finally:
-                log.append(text.split(" ", 2)[0]+" "+text.split(" ", 2)[1])  # add to log the operation create folder
-                text = text.replace(text.split(" ")[0]+" "+text.split(" ")[1],"")  # remove create folder from text
+                text = text.replace("create_file " + folder_path + " #endoffunctions#", "", 1)
         elif text.startswith("create_file"):  # create file
-            familiar = True
             folder_path = text.split(" ", 2)[1]  # get the path
-            if len(text.split(" ", 2)) > 2:  # part of the bytes of the file was sent to us
-                file_text = text.split(" ", 2)[2]  # ([operation, path, text])
-            else:
-                file_text = ""
-            with open(os.path.normpath(current_path + "\\" + folder_path), 'wb') as file:  # open file to write
-                file_text += sock.recv(4096).decode()  # add the next bytes
-                text += file_text
-                while "#endoffunctions#" not in file_text:
-                    file_text += sock.recv(4096).decode()
-                    text += file_text
+            file_text = text.split(" ", 2)[2]  # ([operation, path, text])
+            with open(norming_path(current_path + "\\" + folder_path), 'w') as file:  # open file to write
                 file_text = file_text.split("#endoffunctions#", 1)[0]  # now file_text = only the file bytes
                 log.append(("create_file " + folder_path + " " + file_text + "#endoffunctions#"))
-                text = text.replace("create_file " + folder_path + " "+file_text+"#endoffunctions#","",1)
+                text = text.replace("create_file " + folder_path + " " + file_text + "#endoffunctions#", "", 1)
                 file.write(file_text)
         elif text.startswith("delete"):
-            familiar = True
+            folder_path = text.split(" ", 2)[1]  # get the path
+            if os.path.exists(folder_path):
+                log.append(send_delete_file(folder_path))
+            folder_path = norming_path(current_path + "\\" + folder_path)
             try:
-                os.remove(text.split(" ", 2)[1])
+                os.remove(folder_path)
             finally:
-                log.append("delete " + (text.split(" ", 2)[1]))
-                text.replace("delete " + text.split(" ", 2)[1],"",1)
-        else:
-            update(text)
+                text.replace("delete " + text.split(" ", 2)[1] + " #endoffunctions#", "", 1)
     return log
 
 
-#random ID choosing
+def send_log(log, sock):
+    log.append("#endoflog#")
+    for operation in log:
+        sock.send(operation.encode())
+
+
+# random ID choosing
 def make_ID():
     characters = string.ascii_letters + string.digits
     password = ''.join(random.choice(characters) for i in range(128))
     return password
 
-def send_file(path, sock,base_folder):
-    path_to_send = path.replace(norming_path(base_folder+"\\"),"",1)
-    print("sending file "+ path_to_send)
-    if os.path.isdir(path):
-        print("creating folder "+ path_to_send +" in "+path)
-        sock.send(("create_folder " + path_to_send).encode())
-        return
-    sock.send(("create_file " + path_to_send + " ").encode())  # first send the operation + path
-    with open(path, 'rb') as file:
-        sock.send(file.read())
-        sock.send("#endoffunctions#".encode())
+
+def send_file(path, current_path):
+    if os.path.isdir(norming_path(current_path + "\\" + path)):
+        return "create_folder " + path + " #endoffunctions#"
+    operation = "create_file " + path + " "  # first send the operation + path
+    with open(path, 'r') as file:
+        operation += file.read()
+        operation += "#endoffunctions#"
+    return operation
 
 
-def send_delete_file(path, sock):
-    sock.send(("delete " + path + " ").encode())
+def send_file_deep(path, current_path):
+    log = [send_file(path, current_path)]
+    if os.path.isdir(norming_path(current_path + "\\" + path)):
+        for file in os.listdir(norming_path(current_path + "\\" + path)):
+            log.extend(send_file_deep(file, norming_path(current_path + "\\" + path)))
+    return log
 
-def send_file_deep(path, sock, base_folder):
-    send_file(path, sock,base_folder)
-    if(os.path.isdir(path)):
-        for file in os.listdir(path):
-            send_file_deep(file, sock,base_folder)
 
 def norming_path(path):
-    if(sys.platform.startswith("win")):
-        return path.replace("/","\\")
-    elif(sys.platform.startswith("linux")):
+    if sys.platform.startswith("win"):
+        return path.replace("/", "\\")
+    elif sys.platform.startswith("linux"):
         return path.replace("\\", "/")
