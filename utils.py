@@ -1,11 +1,13 @@
 import socket
 import os
 import sys
+import server
+import string
 
 def getnum():
     return 18
 
-def execute_operation(current_path, sock):
+def execute_operation(current_path, sock, address):
     print("execute_operation "+ current_path)
     log = []
     familiar = True
@@ -48,9 +50,15 @@ def execute_operation(current_path, sock):
                 log.append("delete " + (text.split(" ", 2)[1]))
                 text.replace("delete " + text.split(" ", 2)[1],"",1)
         else:
-            log.append(text)
+            update(text)
     return log
 
+
+#random ID choosing
+def make_ID():
+    characters = string.ascii_letters + string.digits
+    password = ''.join(random.choice(characters) for i in range(128))
+    return password
 
 def send_file(path, sock,base_folder):
     path_to_send = path.replace(norming_path(base_folder+"\\"),"",1)

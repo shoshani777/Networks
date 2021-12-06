@@ -10,11 +10,9 @@ IP_and_port_to_ID=dict()
 IP_and_port_to_actions_nissing = dict()
 BASE_PATH = utils.norming_path(".\\clients")
 
-#random ID choosing
-def make_ID():
-    characters = string.ascii_letters + string.digits
-    password = ''.join(random.choice(characters) for i in range(128))
-    return password
+#updating a client on a change
+def update_change(action):
+
 
 #updating a client
 def update(sock, ID, client_IP,client_port):
@@ -31,7 +29,6 @@ def main():
     server.listen(5)
     while True:
         client_socket, client_address = server.accept()
-
         if(client_address in IP_and_port_to_ID.keys()):
             ID = IP_and_port_to_ID[client_address]
             result_str = utils.execute_operation(utils.norming_path(BASE_PATH+"\\"+ID), client_socket)
@@ -43,7 +40,7 @@ def main():
                 client_socket.send("#endoffunctions#".encode())
                 break
             elif (string.startswith("give id")):
-                ID = make_ID()
+                ID = utils.make_ID()
                 IP_and_port_to_ID[client_address] = ID
                 IP_and_port_to_actions_nissing[client_address] = []
                 client_socket.send(IP_and_port_to_ID[client_address].encode())
