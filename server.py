@@ -5,10 +5,10 @@ import random
 import os
 import utils
 
-SERVER_PORT = int(sys.argv[1])
+SERVER_PORT = int(sys.argv[1])+utils.getnum()
 IP_and_port_to_ID=dict()
 IP_and_port_to_actions_nissing = dict()
-BASE_PATH = os.path.normpath(".\\clients")
+BASE_PATH = utils.norming_path(".\\clients")
 
 #random ID choosing
 def make_ID():
@@ -31,9 +31,14 @@ def main():
     server.listen(5)
     while True:
         client_socket, client_address = server.accept()
-        result_str = utils.execute_operation(BASE_PATH, client_socket)
+
+        if(client_address in IP_and_port_to_ID.keys()):
+            ID = IP_and_port_to_ID[client_address]
+            result_str = utils.execute_operation(utils.norming_path(BASE_PATH+"\\"+ID), client_socket)
+        else:
+            result_str = utils.execute_operation(BASE_PATH, client_socket)
         for string in result_str:
-            if (string.startswith("update ")):
+            if (string.startswith("update")):
                 update(client_socket, IP_and_port_to_ID[client_address],client_address[0], client_address[1])
                 client_socket.send("#endoffunctions#".encode())
                 break
@@ -42,26 +47,24 @@ def main():
                 IP_and_port_to_ID[client_address] = ID
                 IP_and_port_to_actions_nissing[client_address] = []
                 client_socket.send(IP_and_port_to_ID[client_address].encode())
-                print("trying to create folder")
-                client_socket.send(("create_folder "+os.path.normpath(BASE_PATH+"\\"+ID)).encode())
-                client_socket.send("#endoffunctions#".encode())
+                os.mkdir(utils.norming_path(BASE_PATH+"\\"+ID))
                 break
-            elif (string.startswith("ID ")):
+            elif (string.startswith("ID")):
                 ID = string.split(' ')[1]
                 IP_and_port_to_ID[client_address] = ID
                 if (len(os.listdir(os.path.normpath(BASE_PATH+"\\"+ID)))>0):
                     for file in os.listdir(os.path.normpath(BASE_PATH+"\\"+ID)):
-                        utils.send_file_deep(os.path.normpath(BASE_PATH+"\\"+ID+"\\"+file),client_socket,ID)
+                        all_path = os.path.normpath(BASE_PATH+"\\"+ID+"\\"+file)
+                        utils.send_file_deep(all_path,client_socket,os.path.normpath(BASE_PATH+"\\"+ID))
                     IP_and_port_to_actions_nissing[client_address] = []
                 client_socket.send("#endoffunctions#".encode())
                 break
-            else:
+            elif(string != ""):
                 ID = IP_and_port_to_ID[client_address]
                 for address in IP_and_port_to_actions_nissing.keys():
                     if(IP_and_port_to_ID[address]!=ID and address!=client_address):
                         IP_and_port_to_actions_nissing[client_address].append(string)
-
+        client_socket.close()
 
 if __name__ == '__main__':
     main()
-

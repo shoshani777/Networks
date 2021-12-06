@@ -3,6 +3,7 @@ import utils
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 import sys
+import os
 import time
 
 
@@ -29,12 +30,12 @@ def on_moved(event):
 
 
 SERVER_IP = sys.argv[1]
-SERVER_PORT = int(sys.argv[2])
+SERVER_PORT = int(sys.argv[2])+utils.getnum()
 FOLDER_PATH = sys.argv[3]
+BASE_PATH = utils.norming_path("\\").join(FOLDER_PATH.split(utils.norming_path("\\"))[:-1])
 UPDATING_FREQUENCY = int(sys.argv[4])
 server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_sock.connect((SERVER_IP, SERVER_PORT))
-
 
 def main():
     if len(sys.argv) > 5:  # already connected
@@ -44,8 +45,10 @@ def main():
     else:
         server_sock.send("give id".encode())  # send id (to get one) and the path to track
         client_id = server_sock.recv(4096).decode()
-        utils.send_file_deep(FOLDER_PATH, server_sock)
-    print(client_id)
+        print("client recieved id: " +client_id)
+        #time.sleep(1000)
+        utils.send_file_deep(FOLDER_PATH, server_sock, BASE_PATH)
+    time.sleep(1000)
     patterns = ["*"]
     ignore_patterns = None
     ignore_directories = False
@@ -61,6 +64,7 @@ def main():
     my_observer.schedule(my_event_handler, FOLDER_PATH, recursive=go_recursively)
     my_observer.start()
     # try:
+    print("starting whiloop")
     while True:
         time.sleep(UPDATING_FREQUENCY)
         server_sock.send((("update " + client_id).encode()))
