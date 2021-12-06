@@ -2,6 +2,7 @@ import socket
 import os
 import sys
 import string
+import random
 
 
 def getnum():
