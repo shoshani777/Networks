@@ -38,7 +38,7 @@ def execute_log(current_path, sock):
                 file.write(file_text)
         elif text.startswith("delete"):
             folder_path = text.split(" ", 2)[1]  # get the path
-            if os.path.exists(folder_path):
+            if os.path.exists(norming_path(current_path + "\\" + folder_path)):
                 log.append(send_delete_file(folder_path))
             folder_path = norming_path(current_path + "\\" + folder_path)
             try:
