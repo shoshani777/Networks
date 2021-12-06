@@ -16,7 +16,7 @@ def execute_log(current_path, sock):
     log = []
     text = ""
     while text is not "#endoflog#":
-        while "#endoffunctions#" not in text:
+        while "#endoffunctions#" not in text and text is not "#endoflog#":
             text += sock.recv(4096).decode()  # get operation
         if text.startswith("create_folder"):  # create folder
             folder_path = text.split(" ", 2)[1]  # get the path
