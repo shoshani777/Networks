@@ -7,7 +7,7 @@ import time
 
 
 def on_created(event):
-    log.extend(utils.send_file_deep(event.src_path, BASE_PATH))
+    log.append(utils.send_file(event.src_path, BASE_PATH))
 
 
 def on_deleted(event):
@@ -16,12 +16,12 @@ def on_deleted(event):
 
 def on_modified(event):
     log.append(utils.send_delete_file(event.src_path))
-    log.extend(utils.send_file_deep(event.src_path, BASE_PATH))
+    log.append(utils.send_file(event.src_path, BASE_PATH))
 
 
 def on_moved(event):
     log.append(utils.send_delete_file(event.src_path))
-    log.extend(utils.send_file_deep(event.des_path, BASE_PATH))
+    log.append(utils.send_file(event.des_path, BASE_PATH))
 
 
 SERVER_IP = sys.argv[1]
@@ -38,7 +38,7 @@ def main():
     server_sock.connect((SERVER_IP, SERVER_PORT))
     if len(sys.argv) > 5:  # already connected
         ID = sys.argv[5]
-        server_sock.send(("ID " + personal_id + " " + ID).decode().encode())
+        server_sock.send(("ID " + personal_id + " " + ID).encode())
         utils.execute_log(BASE_PATH, server_sock)  # get the updates from the server
     else:
         server_sock.send(("give_id " + personal_id).encode())
