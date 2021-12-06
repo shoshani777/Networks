@@ -13,7 +13,6 @@ def send_delete_file(path):
 
 
 def execute_log(current_path, sock):
-    print("execute_operation " + current_path)
     log = []
     text = ""
     while "#endoflog#" not in text:
