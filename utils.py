@@ -15,7 +15,7 @@ def send_delete_file(path):
 def execute_log(current_path, sock):
     log = []
     text = ""
-    while "#endoflog#" not in text:
+    while text is not "#endoflog#":
         while "#endoffunctions#" not in text:
             text += sock.recv(4096).decode()  # get operation
         if text.startswith("create_folder"):  # create folder
