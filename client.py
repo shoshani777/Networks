@@ -63,6 +63,7 @@ def main():
     my_observer.start()
     while True:
         time.sleep(UPDATING_FREQUENCY)
+        server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_sock.connect((SERVER_IP, SERVER_PORT))
         server_sock.send(("update " + personal_id + " " + ID).encode())
         utils.execute_log(BASE_PATH, server_sock)
