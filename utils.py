@@ -44,7 +44,7 @@ def execute_log(current_path, sock):
             try:
                 os.remove(folder_path)
             finally:
-                text.replace("delete " + text.split(" ", 2)[1] + " #endoffunctions#", "", 1)
+                text = text.replace("delete " + text.split(" ", 2)[1] + " #endoffunctions#", "", 1)
     return log
 
 
