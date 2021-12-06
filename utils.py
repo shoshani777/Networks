@@ -65,7 +65,7 @@ def send_file(path, current_path):
     if os.path.isdir(norming_path(current_path + "\\" + path)):
         return "create_folder " + path + " #endoffunctions#"
     operation = "create_file " + path + " "  # first send the operation + path
-    with open(path, 'r') as file:
+    with open(norming_path(current_path + "\\" + path), 'r') as file:
         operation += file.read()
         operation += "#endoffunctions#"
     return operation
