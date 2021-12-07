@@ -67,6 +67,7 @@ def main():
         server_sock.connect((SERVER_IP, SERVER_PORT))
         server_sock.send(("update " + personal_id + " " + ID).encode())
         utils.execute_log(BASE_PATH, server_sock)
+        time.sleep(1)
         utils.send_log(log, server_sock)
         server_sock.close()
         log.clear()
