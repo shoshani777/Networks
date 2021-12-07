@@ -6,7 +6,7 @@ import random
 
 
 def getnum():
-    return 18
+    return 6
 
 
 def send_delete_file(path):
@@ -23,9 +23,9 @@ def execute_log(current_path, sock):
             folder_path = text.split(" ", 2)[1]  # get the path
             try:
                 os.makedirs(norming_path(current_path + "\\" + folder_path))
-                log.append("create_file " + folder_path + " #endoffunctions#")  # add to log the operation create folder
+                log.append("create_folder " + folder_path + " #endoffunctions#")  # add to log the operation create folder
             finally:
-                text = text.replace("create_file " + folder_path + " #endoffunctions#", "", 1)
+                text = text.replace("create_folder " + folder_path + " #endoffunctions#", "", 1)
         elif text.startswith("create_file"):  # create file
             folder_path = text.split(" ", 2)[1]  # get the path
             if os.path.exists(norming_path(current_path + "\\" + folder_path)):

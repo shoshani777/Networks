@@ -7,7 +7,9 @@ import time
 
 
 def on_created(event):
-    log.append(utils.send_file(event.src_path, BASE_PATH))
+    corrected_path = event.src_path.replace(utils.norming_path(BASE_PATH+"\\"),"",1)
+    print("before correction: "+event.src_path+" ,corrected: "+corrected_path)
+    log.append(utils.send_file(corrected_path, BASE_PATH))
 
 
 def on_deleted(event):
@@ -26,8 +28,9 @@ def on_moved(event):
 
 SERVER_IP = sys.argv[1]
 SERVER_PORT = int(sys.argv[2])+utils.getnum()
-FOLDER_PATH = sys.argv[3]
-BASE_PATH = utils.norming_path("\\").join(FOLDER_PATH.split(utils.norming_path("\\"))[:-1])
+FOLDER_PATH = utils.norming_path(sys.argv[3])
+BASE_PATH = utils.norming_path("\\".join(FOLDER_PATH.split(utils.norming_path("\\"))[:-1]))
+MONITORED_FOLDER = FOLDER_PATH.replace(utils.norming_path(BASE_PATH+"\\"),"",1)
 UPDATING_FREQUENCY = int(sys.argv[4])
 log = []
 personal_id = utils.make_ID()
@@ -43,7 +46,7 @@ def main():
     else:
         server_sock.send(("give_id " + personal_id).encode())
         ID = server_sock.recv(4096).decode()  # send current file
-        log.extend(utils.send_file_deep("", BASE_PATH))
+        log.extend(utils.send_file_deep(MONITORED_FOLDER, BASE_PATH))
         utils.send_log(log, server_sock)
         log.clear()
     server_sock.close()

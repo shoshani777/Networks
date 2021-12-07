@@ -1,7 +1,6 @@
 import socket
 import sys
 import string
-import random
 import os
 import utils
 
@@ -28,7 +27,7 @@ def main():
             ID = utils.make_ID()
             ID_to_clientIDs[ID] = [].append(clientID)
             clientID_to_actionLog[clientID] = []
-            client_socket.send(ID)
+            client_socket.send(ID.encode())
             os.mkdir(utils.norming_path(BASE_PATH + "\\" + ID))
         elif (action == "ID"):
             was_ID = True
@@ -43,7 +42,7 @@ def main():
         elif(action == "update"):
             ID = msg.split(' ')[2]
             was_update = True
-            utils.send_log(clientID_to_actionLog[clientID],clientID)
+            utils.send_log(clientID_to_actionLog[clientID],client_socket)
         if(not was_ID):
             log = utils.execute_log(utils.norming_path(BASE_PATH + "\\" + ID),client_socket)
             if(was_update):
