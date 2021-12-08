@@ -5,7 +5,7 @@ import os
 import utils
 
 SERVER_PORT = int(sys.argv[1])+utils.getnum()
-ID_to_clientIDs=dict()
+ID_to_clientIDs =dict()
 clientID_to_actionLog = dict()
 BASE_PATH = utils.norming_path(".\\clients")
 
@@ -25,7 +25,8 @@ def main():
         if (action == "give_id"):
             was_give_id = True
             ID = utils.make_ID()
-            ID_to_clientIDs[ID] = [].append(clientID)
+            ID_to_clientIDs[ID] = []
+            ID_to_clientIDs[ID].append(clientID)
             clientID_to_actionLog[clientID] = []
             client_socket.send(ID.encode())
             os.mkdir(utils.norming_path(BASE_PATH + "\\" + ID))
@@ -52,5 +53,6 @@ def main():
                             clientID_to_actionLog[curr_clientID].append(act)
         client_socket.close()
 
-if __name__ == '__main__':
+
+if __name__ == '_main_':
     main()

@@ -4,26 +4,35 @@ from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 import sys
 import time
+import os
 
 
 def on_created(event):
-    corrected_path = event.src_path.replace(utils.norming_path(BASE_PATH+"\\"),"",1)
-    print("before correction: "+event.src_path+" ,corrected: "+corrected_path)
-    log.append(utils.send_file(corrected_path, BASE_PATH))
+    print("on created: "+event.src_path)
+    relative_path = event.src_path.replace(utils.norming_path(BASE_PATH+"\\"),"",1)
+    log.append(utils.send_file(relative_path, BASE_PATH))
 
 
 def on_deleted(event):
-    log.append(utils.send_delete_file(event.src_path))
+    print("on deleted: "+event.src_path)
+    relative_path = event.src_path.replace(utils.norming_path(BASE_PATH+"\\"),"",1)
+    log.append(utils.send_delete_file(relative_path))
 
 
 def on_modified(event):
-    log.append(utils.send_delete_file(event.src_path))
-    log.append(utils.send_file(event.src_path, BASE_PATH))
+    if not os.path.isdir(event.src_path):
+        print("on modified: "+event.src_path)
+        relative_path = event.src_path.replace(utils.norming_path(BASE_PATH+"\\"),"",1)
+        log.append(utils.send_delete_file(relative_path))
+        log.append(utils.send_file(relative_path, BASE_PATH))
 
 
 def on_moved(event):
-    log.append(utils.send_delete_file(event.src_path))
-    log.append(utils.send_file(event.des_path, BASE_PATH))
+    print("on moved: "+event.src_path+" and dst: "+event.dest_path)
+    relative_path_src = event.src_path.replace(utils.norming_path(BASE_PATH + "\\"), "", 1)
+    relative_path_dst = event.dest_path.replace(utils.norming_path(BASE_PATH + "\\"), "", 1)
+    log.append(utils.send_delete_file(relative_path_src))
+    log.append(utils.send_file(relative_path_dst, BASE_PATH))
 
 
 SERVER_IP = sys.argv[1]
@@ -72,9 +81,10 @@ def main():
         utils.execute_log(BASE_PATH, server_sock)
         time.sleep(1)
         utils.send_log(log, server_sock)
+        time.sleep(1)
         server_sock.close()
         log.clear()
 
 
-if __name__ == '__main__':
+if __name__ == '_main_':
     main()
