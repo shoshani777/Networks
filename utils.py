@@ -5,10 +5,6 @@ import string
 import random
 
 
-def getnum():
-    return 50
-
-
 def send_delete_file(path):
     return "delete " + path + "#endoffunctions#"
 
@@ -22,28 +18,25 @@ def execute_log(current_path, sock):
         if text.startswith("create_folder"):  # create folder
             action = text.split("#endoffunctions#", 1)[0]
             folder_path = action.split(" ", 1)[1]  # get the path
-            print("folder to create: " + folder_path)
             try:
                 os.makedirs(norming_path(current_path + "\\" + folder_path))
                 log.append("create_folder " + folder_path + " #endoffunctions#")  # add to log the operation create folder
             finally:
                 text = text.split("#endoffunctions#", 1)[1]
         elif text.startswith("create_file"):  # create file
-            print("text: " + text)
             action = text.split("#endoffunctions#", 1)[0]
             folder_path = action.split("#startoftext#", 1)[0].split(" ",1)[1]  # get the path
             file_text = action.split("#startoftext#", 1)[1]  # ([operation, path, text])
             if os.path.exists(norming_path(current_path + "\\" + folder_path)):
                 text = text.split("#endoffunctions#", 1)[1]
                 continue
-            with open(norming_path(current_path + "\\" + folder_path), 'w') as file:  # open file to write
-                log.append((action + "#endoffunctions#"))
+            with open(norming_path(current_path + "\\" + folder_path), 'wb') as file:  # open file to write
+                log.append(action + "#endoffunctions#")
                 text = text.split("#endoffunctions#", 1)[1]
-                file.write(file_text)
+                file.write(file_text.encode())
         elif text.startswith("delete"):
             action = text.split("#endoffunctions#", 1)[0]
             folder_path = action.split(" ", 1)[1]  # get the path
-            print("relative: " + folder_path)
             if os.path.exists(norming_path(current_path + "\\" + folder_path)):
                 log.append(send_delete_file(folder_path))
             folder_path = norming_path(current_path + "\\" + folder_path)
@@ -69,8 +62,8 @@ def send_file(path, current_path):
     if os.path.isdir(norming_path(current_path + "\\" + path)):
         return "create_folder " + path + "#endoffunctions#"
     operation = "create_file " + path + "#startoftext#"  # first send the operation + path
-    with open(norming_path(current_path + "\\" + path), 'r') as file:
-        operation += file.read()
+    with open(norming_path(current_path + "\\" + path), 'rb') as file:
+        operation += file.read().decode()
         operation += "#endoffunctions#"
     return operation
 
@@ -95,13 +88,11 @@ def deep_remove(absolute_path):
         for file in os.listdir(absolute_path):
             deep_remove(norming_path(absolute_path + "\\" + file))
         try:
-            print("removing: " + absolute_path)
             os.rmdir(absolute_path)
         finally:
             pass
     else:
         try:
-            print("removing: "+absolute_path)
             os.remove(absolute_path)
         finally:
             pass
